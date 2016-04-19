@@ -103,19 +103,14 @@ int ledPin     = A5;
 
 SevSeg sevseg;
 
-// notes in the melody:
-int melody[] = {
-  NOTE_C4, NOTE_G3, NOTE_G3, NOTE_A3, NOTE_G3, 0, NOTE_B3, NOTE_C4
-};
+#define DEFAULT_CLOCK_HOUR   = 1200;
+#define DEFAULT_CLOCK_MINUTE = 00;
+#define MINUTE         = 60000;
 
-// note durations: 4 = quarter note, 8 = eighth note, etc.:
-int noteDurations[] = {
-  4, 8, 8, 4, 4, 4, 4, 4
-};
-
-
-static int defaultTime = 1200;
-static int minute      = 60000;
+unsigned int elapsedMillis = 0;
+int clockHour              = DEFAULT_CLOCK_HOUR;
+int clockMinute            = DEFAULT_CLOCK_MINUTE;
+bool clockSet              = false;
 
 void setup() {
   Serial.begin(9600);
@@ -124,27 +119,44 @@ void setup() {
   pinMode(bButtonPin,INPUT);
   pinMode(rButtonPin,INPUT);
 
-  byte numDigits = 4;
-  byte digitPins[] = {2, 5,6,13};//digits:1,2,3,4
+  byte numDigits     = 4;
+  byte digitPins[]   = {2, 5,6,13};//digits:1,2,3,4
   byte segmentPins[] = {3,7,11,9,8,4,12,10};//Segments: A,B,C,D,E,F,G,Period
+
   sevseg.begin(COMMON_ANODE, numDigits, digitPins, segmentPins);
   sevseg.setBrightness(10);
 
   pinMode(ledPin,OUTPUT);
 
-  sevseg.setNumber(defaultTime,0);
+  sevseg.setNumber(DEFAULT_CLOCK_HOUR+DEFAULT_CLOCK_MINUTE,0);
+  elapsedMillis = millis();
 }
 
 void loop() {
 
-  static unsigned long curTime = millis();
-  if(millis() > curTime){
-    if(millis() - curTime >= minute){
-     sevseg.setNumber(defaultTime+=1,0);
-     curTime = millis(); 
+  if(clockSet){
+    static unsigned long currentMillis = millis();
+
+    if(currentMillis - elapsedMillis >= MINUTE){
+      elapsedMillis = currentMillis;
+
+      clockMinute += 1;//a new minute
+      if(clockMinute>59){//a new hour
+          clockMinute = 00;
+          clockHour += 1;
+          if(clockHour > 12){
+            clockHour = 01;
+          }
+      }
     }
+    else{
+      //TODO: blink 12:00
+    }
+
+    sevseg.setNumber(clockHour+clockMinute,0);
+    //TODO: figure out colon.
   }
-  
+
 
   if(digitalRead(yButtonPin)){
    onYellowButton();
@@ -158,9 +170,9 @@ void loop() {
   else if(digitalRead(rButtonPin)){
    onRedButton();
   }
-   
+
   sevseg.refreshDisplay();
-  
+
 }
 
 void onGreenButton(){
@@ -177,5 +189,5 @@ void onRedButton(){
 
 void onBlueButton(){
   noTone(buzzPin);
+  clockSet = true;
 }
-
