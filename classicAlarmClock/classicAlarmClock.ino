@@ -103,9 +103,9 @@ int ledPin     = A5;
 
 SevSeg sevseg;
 
-#define DEFAULT_CLOCK_HOUR   = 1200;
-#define DEFAULT_CLOCK_MINUTE = 00;
-#define MINUTE         = 60000;
+#define DEFAULT_CLOCK_HOUR    1200
+#define DEFAULT_CLOCK_MINUTE  00
+#define MINUTE                60000
 
 unsigned int elapsedMillis = 0;
 int clockHour              = DEFAULT_CLOCK_HOUR;
@@ -134,28 +134,28 @@ void setup() {
 
 void loop() {
 
-  if(clockSet){
-    static unsigned long currentMillis = millis();
+unsigned long currentMillis = millis();
+Serial.println(currentMillis-elapsedMillis);
+  if(currentMillis - elapsedMillis >= MINUTE){
+    Serial.println(clockMinute);
+    elapsedMillis = currentMillis;
 
-    if(currentMillis - elapsedMillis >= MINUTE){
-      elapsedMillis = currentMillis;
-
-      clockMinute += 1;//a new minute
-      if(clockMinute>59){//a new hour
-          clockMinute = 00;
-          clockHour += 1;
-          if(clockHour > 12){
-            clockHour = 01;
-          }
-      }
+    clockMinute += 1;//a new minute
+    if(clockMinute>59){//a new hour
+        clockMinute = 00;
+        clockHour += 1;
+        if(clockHour > 12){
+          clockHour = 01;
+        }
     }
-    else{
-      //TODO: blink 12:00
-    }
-
-    sevseg.setNumber(clockHour+clockMinute,0);
-    //TODO: figure out colon.
   }
+  else{
+    //TODO: blink 12:00
+  }
+
+  sevseg.setNumber(clockHour+clockMinute,0);
+  //TODO: figure out colon.
+  
 
 
   if(digitalRead(yButtonPin)){
@@ -176,18 +176,20 @@ void loop() {
 }
 
 void onGreenButton(){
+  Serial.println("g");
   tone(buzzPin,NOTE_D8);
 }
 
 void onYellowButton(){
-
+  Serial.println("y");
 }
 
 void onRedButton(){
-
+  Serial.println("r");
 }
 
 void onBlueButton(){
+  Serial.println("b");
   noTone(buzzPin);
   clockSet = true;
 }
