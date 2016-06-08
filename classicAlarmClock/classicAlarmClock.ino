@@ -107,10 +107,10 @@ SevSeg sevseg;
 #define DEFAULT_CLOCK_MINUTE  00
 #define MINUTE                60000
 
-unsigned int elapsedMillis = 0;
-int clockHour              = DEFAULT_CLOCK_HOUR;
-int clockMinute            = DEFAULT_CLOCK_MINUTE;
-bool clockSet              = false;
+unsigned long elapsedMillis = 0;
+int clockHour               = DEFAULT_CLOCK_HOUR;
+int clockMinute             = DEFAULT_CLOCK_MINUTE;
+bool clockSet               = false;
 
 void setup() {
   Serial.begin(9600);
@@ -129,34 +129,29 @@ void setup() {
   pinMode(ledPin,OUTPUT);
 
   sevseg.setNumber(DEFAULT_CLOCK_HOUR+DEFAULT_CLOCK_MINUTE,0);
-  elapsedMillis = millis();
+  elapsedMillis = millis();//time clock was booted up.
 }
 
 void loop() {
 
-unsigned long currentMillis = millis();
-Serial.println(currentMillis-elapsedMillis);
-  if(currentMillis - elapsedMillis >= MINUTE){
-    Serial.println(clockMinute);
-    elapsedMillis = currentMillis;
+  unsigned long currentMillis = millis();
 
-    clockMinute += 1;//a new minute
+  if(currentMillis - elapsedMillis >= MINUTE){
+
+    clockMinute +=1;//a new minute
+    Serial.println(clockMinute);
     if(clockMinute>59){//a new hour
-        clockMinute = 00;
-        clockHour += 1;
-        if(clockHour > 12){
-          clockHour = 01;
+        clockMinute = 0;
+        clockHour +=1;
+        if(clockHour > 1200){
+          clockHour = 100;
         }
     }
-  }
-  else{
-    //TODO: blink 12:00
+
+    elapsedMillis = millis();
   }
 
   sevseg.setNumber(clockHour+clockMinute,0);
-  //TODO: figure out colon.
-  
-
 
   if(digitalRead(yButtonPin)){
    onYellowButton();
@@ -175,21 +170,19 @@ Serial.println(currentMillis-elapsedMillis);
 
 }
 
-void onGreenButton(){
-  Serial.println("g");
+void onRedButton(){
   tone(buzzPin,NOTE_D8);
 }
 
-void onYellowButton(){
+void onBlueButton(){
   Serial.println("y");
 }
 
-void onRedButton(){
+void onGreenButton(){
   Serial.println("r");
 }
 
-void onBlueButton(){
-  Serial.println("b");
+void onYellowButton(){
   noTone(buzzPin);
   clockSet = true;
 }
