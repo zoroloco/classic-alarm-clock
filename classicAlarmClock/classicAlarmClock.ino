@@ -142,7 +142,7 @@ void loop() {
     Serial.println(clockMinute);
     if(clockMinute>59){//a new hour
         clockMinute = 0;
-        clockHour +=1;
+        clockHour +=100;
         if(clockHour > 1200){
           clockHour = 100;
         }
